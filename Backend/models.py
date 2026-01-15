@@ -15,7 +15,7 @@ class LeaveStatus(str, enum.Enum):
     rejected="Rejected"
 
 
-class User(Base):              #employee
+class User(Base):              #employee manager
     __tablename__="users"
 
     id=Column(Integer,primary_key=True,index=True)
@@ -62,3 +62,15 @@ class LeaveRequest(Base):        #core table
     created_at=Column(DateTime,default=datetime.utcnow)
     employee=relationship("User",back_populates="leave_requests")
     leave_type=relationship("LeaveType",back_populates="leave_requests")
+
+
+class LeaveBalance(Base):
+    __tablename__ = "leave_balances"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    leave_type_id = Column(Integer, ForeignKey("leave_types.id"), nullable=False)
+    remaining_days = Column(Integer, nullable=False)
+
+    user = relationship("User")
+    leave_type = relationship("LeaveType")

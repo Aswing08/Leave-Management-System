@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import User
+from models import User,UserRole
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -62,4 +62,29 @@ def get_current_user(
         raise credentials_exception
 
     return user
+#helper Employee
+def employee_required(current_user: User = Depends(get_current_user)):
+    if current_user.role != UserRole.employee:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Employee access only"
+        )
+    return current_user
 
+#helper manager
+def manager_required(current_user: User = Depends(get_current_user)):
+    if current_user.role != UserRole.manager:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Manager access only"
+        )
+    return current_user
+
+#helper manager
+def admin_required(current_user: User = Depends(get_current_user)):
+    if current_user.role != UserRole.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access only"
+        )
+    return current_user

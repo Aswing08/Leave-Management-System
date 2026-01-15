@@ -3,12 +3,20 @@ from typing import Optional
 from datetime import date,datetime
 
 from models import UserRole,LeaveStatus
-# for Employee
+
 
 class UserCreate(BaseModel):
     name: str =Field(min_length=2,max_length=20)
     email: EmailStr
     password: str =Field(min_length=6,max_length=50)
+    role:UserRole
+
+class UserRegisterWithRole(BaseModel):
+    name: str = Field(min_length=2, max_length=20)
+    email: EmailStr
+    password: str = Field(min_length=6, max_length=50)
+    role: UserRole
+
 
 class UserResponse(BaseModel):
     id: int
@@ -53,7 +61,7 @@ class HolidayResponse(BaseModel):
     model_config=ConfigDict(from_attributes=True)
 
 
-class LeaveRequestCreate(BaseModel):
+class LeaveRequestCreate(BaseModel):     #leave
     leave_type_id: int
     start_date: date
     end_date: date
@@ -81,8 +89,10 @@ class LeaveRequestResponse(BaseModel):
     model_config=ConfigDict(from_attributes=True)
 
 
-class LeaveApproveRequest(BaseModel):
+class LeaveApproveRequest(BaseModel):   #manager
     pass
 
 class LeaveRejectRequest(BaseModel):
     manager_remark: str = Field(min_length=5, max_length=200)
+
+
