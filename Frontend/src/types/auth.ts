@@ -7,5 +7,5 @@ export interface RegisterData {
   name: string;
   email: string;
   password: string;
-  role: "admin" | "manager" | "employee";
+  role: "manager" | "employee";
 }

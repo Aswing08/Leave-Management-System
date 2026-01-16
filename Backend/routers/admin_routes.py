@@ -38,7 +38,7 @@ def create_leave_type(
     db.commit()
     db.refresh(leave_type)
 
-    # 🔽 Initialize leave balance for all employees
+    # Initialize leave balance for all employees
     employees = db.query(User).filter(User.role == UserRole.employee).all()
 
     for emp in employees:
@@ -50,7 +50,7 @@ def create_leave_type(
         db.add(balance)
 
     db.commit()
-    # 🔼 Leave balance initialization done
+    #  Leave balance 
 
     return leave_type
 
@@ -128,24 +128,24 @@ def delete_user(
             detail="User not found"
         )
 
-    # ❌ Do not allow deleting admins
+    #  not allow deleting admins
     if user.role == UserRole.admin:
         raise HTTPException(
             status_code=403,
             detail="Admin users cannot be deleted"
         )
 
-    # ✅ Delete related leave requests
+    # Delete related leave requests
     db.query(LeaveRequest).filter(
         LeaveRequest.employee_id == user.id
     ).delete()
 
-    # ✅ Delete related leave balances
+    #  Delete related leave balances
     db.query(LeaveBalance).filter(
         LeaveBalance.user_id == user.id
     ).delete()
 
-    # ✅ Delete user
+    # Delete user
     db.delete(user)
     db.commit()
 

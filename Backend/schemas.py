@@ -78,6 +78,7 @@ class LeaveRequestCreate(BaseModel):     #leave
 
 class LeaveRequestResponse(BaseModel):
     id: int
+    employee_id: int
     leave_type_id: int
     start_date: date
     end_date: date

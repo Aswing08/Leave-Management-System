@@ -1,18 +1,17 @@
 import { Navigate } from "react-router-dom";
-import type{ ReactNode } from "react";
+import { getRole, isLoggedIn } from "./authStore";
 
-type Props = {
-  children: ReactNode;
-  role: string;
-};
+export default function ProtectedRoute({
+  children,
+  allowedRoles,
+}: {
+  children: React.ReactNode;
+  allowedRoles: string[];
+}) {
+  if (!isLoggedIn()) return <Navigate to="/login" replace />;
 
-export default function ProtectedRoute({ children, role }: Props) {
-  const token = localStorage.getItem("token");
-  const userRole = localStorage.getItem("role");
+  const role = getRole();
+  if (!role || !allowedRoles.includes(role)) return <Navigate to="/login" replace />;
 
-  if (!token || !userRole || userRole !== role) {
-    return <Navigate to="/" replace />;
-  }
-
-  return <>{children}</>;
+  return <>{children}</>; //renders protected components
 }

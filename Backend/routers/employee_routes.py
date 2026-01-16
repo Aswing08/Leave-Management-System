@@ -4,7 +4,7 @@ from datetime import date,timedelta
 
 from database import get_db
 from models import LeaveRequest, LeaveStatus,LeaveType,Holiday
-from schemas import LeaveRequestCreate, LeaveRequestResponse
+from schemas import LeaveRequestCreate, LeaveRequestResponse, LeaveTypeResponse
 from auth import employee_required
 
 
@@ -68,7 +68,10 @@ def leave_history(
 
     for leave in leaves:
         days = (leave.end_date - leave.start_date).days + 1
-        total_days += days
+        
+        # Only count approved leaves in total
+        if leave.status == LeaveStatus.approved:
+            total_days += days
 
         history.append({
             "leave_id": leave.id,
@@ -94,6 +97,14 @@ def view_holidays(
     return db.query(Holiday).all()
 
 
+@router.get("/leave-types", response_model=list[LeaveTypeResponse])
+def get_leave_types(
+    db: Session = Depends(get_db),
+    current_user = Depends(employee_required)
+):
+    return db.query(LeaveType).all()
+
+
 
 
 
@@ -103,7 +114,7 @@ def apply_leave(
     db: Session = Depends(get_db),
     current_user = Depends(employee_required)
 ):
-    # 1️⃣ Overlapping leave check
+    # Overlapping leave check
     overlap = (
         db.query(LeaveRequest)
         .filter(
@@ -121,7 +132,7 @@ def apply_leave(
             detail="Leave dates overlap with an existing request"
         )
 
-    # 2️⃣ Holiday & Sunday exclusion
+    # Holiday & Sunday exclusion
     holidays = db.query(Holiday).all()
     working_days = calculate_working_days(
         data.start_date,
@@ -135,7 +146,7 @@ def apply_leave(
             detail="Selected dates contain only holidays or Sundays"
         )
 
-    # 3️⃣ Leave type validation
+    #  Leave type validation
     leave_type = db.query(LeaveType).filter(
         LeaveType.id == data.leave_type_id
     ).first()
@@ -146,7 +157,7 @@ def apply_leave(
             detail="Leave type not found"
         )
 
-    # 4️⃣ Leave balance validation (YEAR SAFE)
+    #  Leave balance validation (YEAR SAFE)
     used_days = get_used_leave_days(
         db,
         current_user.id,
@@ -162,7 +173,7 @@ def apply_leave(
             detail=f"Insufficient leave balance. Remaining: {remaining_days} days"
         )
 
-    # 5️⃣ Create leave request
+    #  Create leave request
     leave = LeaveRequest(
         employee_id=current_user.id,
         leave_type_id=data.leave_type_id,
